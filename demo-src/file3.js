@@ -1,0 +1,1 @@
+addMessage('I am file3.js!');

@@ -7,6 +7,7 @@
     var onProgress = function () {};
     var progressTotal = 0;
     var progressDone = 0;
+    var verbose = false;
 
     function enqueue(req, modules) {
 
@@ -25,7 +26,9 @@
             }
         }
         if(normalizedModules.length > 0) {
-            console.log(normalizedModules);
+            if(verbose) {
+                console.log(normalizedModules);
+            }
             queue.push(normalizedModules);
             progressTotal++;
         } else {
@@ -70,6 +73,10 @@
             onProgress = cb;
         },
         load: function(name, req, load, config) {
+            var conf = config.legacy || {};
+
+            verbose = !!conf.verbose;
+
             if(name !== '') {
                 if(seen[name]) {
                     addOnSuccess(function () {
@@ -80,7 +87,11 @@
                     throw new Error('Not a legacy module: ' + name);
                 }
             } else {
-                var deps = config.legacy.deps;
+                var deps = conf.deps || [];
+                if(!deps.length) {
+                    load();
+                    return;
+                }
                 for(var i = 0; i < deps.length; i++) {
                     enqueue(req, deps[i]);
                 }
